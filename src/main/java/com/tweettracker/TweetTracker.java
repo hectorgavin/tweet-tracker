@@ -1,5 +1,10 @@
 package com.tweettracker;
 
+import com.tweettracker.auth.TwitterCredentials;
+import com.tweettracker.consumer.TweetConsumer;
+import com.tweettracker.processor.SleepTweetProcessor;
+import com.tweettracker.processor.TweetProcessor;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -17,7 +22,13 @@ public class TweetTracker {
 
             // Consume Tweets stream
             final TweetConsumer tweetConsumer = new TweetConsumer(new TwitterCredentials(properties), Arrays.asList(args));
-            tweetConsumer.consume(TweetTracker::consumeTweet, 4);
+            final TweetProcessor tweetProcessor = new SleepTweetProcessor();
+            tweetConsumer.consume(tweetProcessor, 10);
+
+            // Interrupt after 10000
+            Thread.sleep(10000);
+            System.out.println("Done");
+            tweetConsumer.shutdown();
         }
         catch(IOException e) {
             System.err.println("There was an error when reading config.properties file");
@@ -29,9 +40,5 @@ public class TweetTracker {
             System.out.println("Invalid arguments");
             System.exit(-1);
         }
-    }
-
-    private static void consumeTweet(Tweet tweet) {
-        System.out.println(tweet);
     }
 }

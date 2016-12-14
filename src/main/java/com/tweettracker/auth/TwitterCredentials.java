@@ -1,4 +1,4 @@
-package com.tweettracker;
+package com.tweettracker.auth;
 
 import java.util.Properties;
 

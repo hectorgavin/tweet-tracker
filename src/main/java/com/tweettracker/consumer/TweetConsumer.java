@@ -1,5 +1,7 @@
-package com.tweettracker;
+package com.tweettracker.consumer;
 
+import com.tweettracker.processor.TweetProcessor;
+import com.tweettracker.auth.TwitterCredentials;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
 import com.twitter.hbc.core.Constants;
@@ -15,10 +17,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-class TweetConsumer {
+public class TweetConsumer {
 
     private static final String CLIENT_NAME = "tweet-consumer";
 
@@ -26,7 +27,7 @@ class TweetConsumer {
     private BlockingQueue<String> queue;
     private ExecutorService consumersPool;
 
-    TweetConsumer(TwitterCredentials config, List<String> hashTags) {
+    public TweetConsumer(TwitterCredentials config, List<String> hashTags) {
         this(config, hashTags, 10000);
     }
 
@@ -52,18 +53,18 @@ class TweetConsumer {
         return builder.build();
     }
 
-    void consume(Consumer<Tweet> consumer, int threads) {
+    public void consume(TweetProcessor tweetProcessor, int threads) {
         shutdown();
         consumersPool = Executors.newFixedThreadPool(threads);
 
         IntStream.range(0, threads)
-                 .mapToObj(i -> new TweetConsumerThread(i, consumer, queue))
+                 .mapToObj(i -> new TweetConsumerThread(i+1, tweetProcessor, queue))
                  .forEach(consumersPool::submit);
 
         client.connect();
     }
 
-    void shutdown() {
+    public void shutdown() {
         if (consumersPool != null && !consumersPool.isShutdown()) {
             consumersPool.shutdownNow();
         }

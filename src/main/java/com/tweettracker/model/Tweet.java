@@ -1,17 +1,19 @@
-package com.tweettracker;
+package com.tweettracker.model;
 
+import com.tweettracker.consumer.TweetConsumerThread;
+import com.tweettracker.exception.InvalidTweetException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
-class Tweet {
+public class Tweet {
     private String message;
     private Date postedAt;
     private String location;
     private String originalEvent;
     private TweetConsumerThread consumerThread;
 
-    Tweet(String eventMessage, TweetConsumerThread thread) throws InvalidTweetException {
+    public Tweet(String eventMessage, TweetConsumerThread thread) throws InvalidTweetException {
         JSONObject json = new JSONObject(eventMessage);
         validate(json);
         message = json.getString("text");
@@ -30,11 +32,7 @@ class Tweet {
         }
     }
 
-    public String getLocation() {
-        return location;
-    }
-
     public String toString() {
-        return "[Thread "+ consumerThread.getId() +"] "+ message;
+        return message.replaceAll("\n", " ");
     }
 }
